@@ -1,7 +1,0 @@
-[requires]
-qtpromise/v0.5.0@cmguo/stable
-
-[generators]
-qmake
-
-[options]

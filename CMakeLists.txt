@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(CMakeDemo)
+project(QtEventBus LANGUAGES CXX)
+
+option(ENABLE_LIBCXX "Enable build with libc++" OFF)
 
 # Read the version information from the VERSION file
 file(STRINGS "${PROJECT_SOURCE_DIR}/VERSION" PACKAGE_VERSION)
@@ -35,7 +37,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Quick)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Quick)
@@ -52,12 +54,15 @@ FUNCTION(PREPEND var)
     SET(${var} "${listVar}" PARENT_SCOPE)
 ENDFUNCTION(PREPEND)
 
+include(GNUInstallDirs)
 
+set(INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(EXPORT_NAMESPACE "${PROJECT_NAME}::")
 
 
 add_subdirectory(src)
 
-set(CMakeDemo_INC
+set(QtEventBus_INC
         include/source_file.hpp
         include/qeventbus.h
         include/qeventbusqml.h
@@ -70,14 +75,14 @@ set(CMakeDemo_INC
 )
 
 
-if (BUILD_TESTING)
+#if (BUILD_TESTING)
     add_subdirectory(tests)
-endif ()
+#endif ()
 
 
-add_library(CMakeDemo STATIC ${CMakeDemo_SRC} ${CMakeDemo_INC})
+add_library(QtEventBus STATIC ${QtEventBus_SRC} ${QtEventBus_INC})
 
-target_link_libraries(CMakeDemo PRIVATE
+target_link_libraries(QtEventBus PRIVATE
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Quick
         qtpromise
@@ -85,15 +90,15 @@ target_link_libraries(CMakeDemo PRIVATE
 
 # These variables slightly modify the install location to allow for version
 # specific installations.
-#set(CMakeDemo_INCLUDE_DEST "include/CMakeDemo-${CMakeDemo_VERSION}")
-#set(CMakeDemo_LIB_DEST "lib/CMakeDemo-${CMakeDemo_VERSION}")
+#set(QtEventBus_INCLUDE_DEST "include/QtEventBus-${QtEventBus_VERSION}")
+#set(QtEventBus_LIB_DEST "lib/QtEventBus-${QtEventBus_VERSION}")
 
 
 # generator expressions are needed for the include directories, since installing headers changes the include path
-# Specify that CMakeDemo requires the files located in the include/ directory at
+# Specify that QtEventBus requires the files located in the include/ directory at
 # compile time. This would normally look like
-#   target_include_directories(CMakeDemo PUBLIC include/)
-# PUBLIC means that other libraries including CMakeDemo should also include the
+#   target_include_directories(QtEventBus PUBLIC include/)
+# PUBLIC means that other libraries including QtEventBus should also include the
 # directory include/.
 # However, there is a catch. If we are installing the project in
 # CMAKE_INSTALL_PREFIX, we can't specify include/ in the build directory: we have
@@ -102,15 +107,15 @@ target_link_libraries(CMakeDemo PRIVATE
 # CMake command handles this. $<BUILD_INTERFACE:...> and
 # $<INSTALL_INTERFACE:...> are macros whose values change depending on if we are
 # simply building the code or if we are installing it.
-target_include_directories(CMakeDemo PUBLIC
+target_include_directories(QtEventBus PUBLIC
         # headers to include when building from source
-        $<BUILD_INTERFACE:${CMakeDemo_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMakeDemo_BINARY_DIR}/include>
+        $<BUILD_INTERFACE:${QtEventBus_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${QtEventBus_BINARY_DIR}/include>
 
         # headers to include when installing  (implicitly prefixes with ${CMAKE_INSTALL_PREFIX}).
         $<INSTALL_INTERFACE:include>
 )
-target_include_directories(CMakeDemo INTERFACE
+target_include_directories(QtEventBus INTERFACE
         3rdparty/qtpromise/include
 )
 
